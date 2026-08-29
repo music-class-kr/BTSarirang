@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>세계 속 우리의 아리랑</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%);
+      color: #fff;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .slide-container { width:100vw; height:100vh; position:relative; overflow:hidden; }
+    .slide {
+      position:absolute; top:0; left:0;
+      width:100%; height:100%;
+      display:none; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding:36px 80px; overflow-y:auto;
+    }
+    .slide.active { display:flex; }
+    .slide h2 {
+      font-size:2rem; color:#ffd700; text-align:center;
+      margin-bottom:16px;
+      text-shadow:0 0 20px rgba(255,215,0,0.5);
+      border-bottom:2px solid rgba(255,215,0,0.4);
+      padding-bottom:10px; width:100%; flex-shrink:0;
+    }
+    .nav-btn {
+      position:fixed; top:50%; transform:translateY(-50%);
+      background:#ffd700; color:#1a0a2e;
+      border:none; border-radius:50%;
+      width:60px; height:60px;
+      font-size:2rem; font-weight:900;
+      cursor:pointer; z-index:99999;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 4px 24px rgba(0,0,0,0.8);
+      transition:transform 0.15s;
+    }
+    .nav-btn:hover { transform:translateY(-50%) scale(1.13); }
+    .nav-btn.prev { left:10px; }
+    .nav-btn.next { right:10px; }
+    .dots {
+      position:fixed; bottom:16px; left:50%;
+      transform:translateX(-50%);
+      display:flex; gap:8px; z-index:99999;
+    }
+    .dot {
+      width:10px; height:10px; border-radius:50%;
+      background:rgba(255,255,255,0.3);
+      cursor:pointer; transition:background 0.2s;
+    }
+    .dot.active { background:#ffd700; }
+    .slide-counter {
+      position:fixed; bottom:16px; right:18px;
+      color:rgba(255,255,255,0.45); font-size:0.82rem; z-index:99999;
+    }
+    .audio-box {
+      background:rgba(255,215,0,0.1);
+      border:1px solid rgba(255,215,0,0.4);
+      border-radius:12px; padding:8px 16px;
+      display:flex; align-items:center; gap:10px; flex-shrink:0;
+    }
+    .num-list { width:100%; display:flex; flex-direction:column; gap:9px; }
+    .num-item {
+      background:rgba(255,255,255,0.07);
+      border-radius:12px; padding:11px 18px;
+      font-size:1.08rem; line-height:1.7;
+      border-left:5px solid #ffd700;
+    }
+    .num-item .num { font-size:1.2rem; font-weight:bold; color:#ffd700; margin-right:7px; }
+    .red    { color:#ff6b6b; font-weight:bold; }
+    .yellow { color:#ffd700; font-weight:bold; }
+    .blue   { color:#74b9ff; font-weight:bold; }
+    .green  { color:#55efc4; font-weight:bold; }
+    .pink   { color:#fd79a8; font-weight:bold; }
+
+    .jgb-wrap {
+      display:flex; justify-content:center;
+      margin:5px auto;
+      border:2px solid #ffd700; border-radius:6px;
+      overflow:hidden; width:fit-content;
+    }
+    .jgb-sub {
+      width:32px; height:58px;
+      border-right:1px solid rgba(255,215,0,0.35);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      background:rgba(255,255,255,0.05); gap:2px;
+    }
+    .jgb-sub:last-child { border-right:none; }
+    .jgb-sub.beat-start { border-left:3px solid #ffd700; }
+    .jgb-sub:first-child { border-left:none !important; }
+    .jgb-sub.strong { background:rgba(255,215,0,0.18); }
+    .jgb-sym { font-size:11px; color:#fff; line-height:1; }
+    .jgb-gm  { font-size:7.5px; color:#ffd700; line-height:1.2; }
+
+    .jd-card {
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,215,0,0.3);
+      border-radius:12px; padding:10px 13px; text-align:center;
+    }
+    .jd-name { font-size:1rem; font-weight:bold; color:#ffd700; margin-bottom:3px; }
+    .jd-info { font-size:0.76rem; color:#ccc; margin-bottom:5px; }
+
+    .yt-btn {
+      background:#ff0000; color:#fff;
+      border:none; border-radius:8px;
+      padding:7px 14px; font-size:0.85rem;
+      cursor:pointer; font-weight:bold; margin-top:6px;
+      transition:background 0.2s; display:inline-block;
+    }
+    .yt-btn:hover { background:#cc0000; }
+
+    .world-card {
+      background:rgba(255,255,255,0.07);
+      border:2px solid rgba(255,215,0,0.35);
+      border-radius:14px; padding:14px 10px; text-align:center;
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+    }
+    .world-flag { font-size:2rem; }
+    .world-name { font-size:0.95rem; font-weight:bold; color:#ffd700; }
+    .world-group{ font-size:0.78rem; color:#a0d0ff; font-weight:bold; }
+    .world-desc { font-size:0.75rem; color:#ddd; line-height:1.45; }
+
+    .score-img {
+      max-width:100%; max-height:200px; object-fit:contain;
+      border:2px solid rgba(255,215,0,0.4);
+      border-radius:10px; margin-top:8px; background:#fff;
+    }
+
+    /* BTS 타임라인 */
+    .bts-step-box {
+      background:rgba(255,255,255,0.08);
+      border:2px solid rgba(255,215,0,0.5);
+      border-radius:10px; padding:7px 8px;
+      text-align:center; min-width:88px; max-width:108px;
+    }
+    .bts-step-box.intro     { border-color:rgba(255,255,255,0.3);  background:rgba(255,255,255,0.05); }
+    .bts-step-box.arirang   { border-color:rgba(255,215,0,0.8);    background:rgba(255,215,0,0.14); }
+    .bts-step-box.jindo     { border-color:rgba(100,180,255,0.8);  background:rgba(100,180,255,0.14); }
+    .bts-step-box.milyang   { border-color:rgba(255,120,200,0.8);  background:rgba(255,120,200,0.14); }
+    .bts-step-box.interlude { border-color:rgba(200,200,200,0.4);  background:rgba(200,200,200,0.08); }
+    .bts-step-box.chorus    { border-color:rgba(255,215,0,0.8);    background:rgba(255,215,0,0.22); }
+    .bts-step-box.bridge    { border-color:rgba(100,255,180,0.8);  background:rgba(100,255,180,0.14); }
+    .bts-step-box.gangwon   { border-color:rgba(255,160,80,0.8);   background:rgba(255,160,80,0.14); }
+    .bts-step-box.outro     { border-color:rgba(200,150,255,0.8);  background:rgba(200,150,255,0.14); }
+    .bts-num   { font-size:0.68rem; color:#aaa; margin-bottom:2px; }
+    .bts-title { font-size:0.85rem; font-weight:bold; color:#fff; line-height:1.3; }
+    .bts-jd    { font-size:0.68rem; color:#ffd700; margin-top:3px; }
+    .bts-gm    { font-size:0.60rem; color:#ddd; margin-top:2px; letter-spacing:0.3px; line-height:1.5; }
+    .bts-arrow { font-size:1.1rem; color:rgba(255,215,0,0.6); padding:0 2px; align-self:center; }
+
+    .jd-gm-grid {
+      display:grid; grid-template-columns:repeat(4,1fr);
+      gap:8px; width:100%; max-width:920px;
+    }
+    .jd-gm-card {
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,215,0,0.25);
+      border-radius:10px; padding:8px 10px; text-align:center;
+    }
+    .jd-gm-name { font-size:0.82rem; font-weight:bold; color:#ffd700; margin-bottom:5px; }
+    .jd-gm-text {
+      font-size:0.75rem; color:#eee;
+      letter-spacing:0.5px; line-height:2;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+<div class="slide-container">
+
+  <!-- slide-0 타이틀 -->
+  <div class="slide active" id="slide-0">
+    <div style="text-align:center;">
+      <div style="font-size:4rem;margin-bottom:16px;">🎵</div>
+      <h1 style="font-size:3rem;color:#ffd700;text-shadow:0 0 30px rgba(255,215,0,0.7);margin-bottom:16px;">세계 속 우리의 아리랑</h1>
+      <p style="font-size:1.3rem;color:#ddd;margin-bottom:28px;">한국의 대표 민요 · 유네스코 인류무형문화유산</p>
+      <div style="font-size:1rem;color:rgba(255,255,255,0.5);">▶ 화살표를 눌러 시작하세요</div>
+    </div>
+  </div>
+
+  <!-- slide-1 아리랑이란? -->
+  <div class="slide" id="slide-1">
+    <h2>🎶 아리랑이란?</h2>
+    <div class="num-list">
+      <div class="num-item"><span class="num">①</span><span class="yellow">한국의 대표 민요</span> — 수천 년간 민중이 만들고 부른 노래</div>
+      <div class="num-item"><span class="num">②</span>종류만 <span class="red">60여 종 · 3,600여 곡</span> 이상 전해짐</div>
+      <div class="num-item"><span class="num">③</span><span class="blue">2012년 유네스코 인류무형문화유산</span> 등재</div>
+      <div class="num-item"><span class="num">④</span>가사 핵심: <span class="yellow">「아리랑 아리랑 아라리요」</span> — 후렴구 공통 반복</div>
+      <div class="num-item"><span class="num">⑤</span>지역마다 <span class="green">다른 장단·음계·사설</span>을 가짐 → 밀양 / 진도 / 강원도 아리랑 등</div>
+      <div class="num-item"><span class="num">⑥</span><span class="pink">슬픔·그리움·희망</span>을 모두 담은 한민족의 정서 그 자체</div>
+    </div>
+  </div>
+
+  <!-- slide-2 아랑설화 -->
+  <div class="slide" id="slide-2">
+    <h2>👻 아랑설화 — 밀양아리랑의 기원</h2>
+    <div class="num-list">
+      <div class="num-item"><span class="num">①</span>밀양 부사의 딸 <span class="yellow">아랑</span>, 밤에 통인에게 <span class="red">납치·살해</span>됨</div>
+      <div class="num-item"><span class="num">②</span>아랑의 <span class="blue">원혼이 나타나</span> 새로 부임한 사또 앞에 억울함을 호소</div>
+      <div class="num-item"><span class="num">③</span>사또가 범인을 잡아 <span class="green">억울한 누명을 풀어줌</span></div>
+      <div class="num-item"><span class="num">④</span>이 이야기가 민중에게 전해지며 <span class="yellow">「아리랑」 노래로 이어졌다</span>는 설</div>
+      <div class="num-item"><span class="num">⑤</span>지금도 밀양에는 <span class="pink">아랑사(祠)</span>가 남아 있음</div>
+    </div>
+  </div>
+
+  <!-- slide-3 밀양아리랑 -->
+  <div class="slide" id="slide-3">
+    <h2>🌸 밀양아리랑</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;">
+      <div class="num-list">
+        <div class="num-item"><span class="num">①</span>장단: <span class="yellow">세마치장단</span> (3소박 3박)</div>
+        <div class="num-item"><span class="num">②</span>빠르고 <span class="green">경쾌·흥겨운</span> 느낌</div>
+        <div class="num-item"><span class="num">③</span>음계: <span class="blue">경토리</span> (경상도 특유)</div>
+        <div class="num-item"><span class="num">④</span>후렴: <span class="yellow">「날 좀 보소 날 좀 보소」</span></div>
+        <div class="num-item"><span class="num">⑤</span>발상지: <span class="pink">경상남도 밀양</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;">
+        <div class="audio-box">
+          <span>🎵 밀양아리랑</span>
+          <audio id="audio-milyang" controls style="width:190px;">
+            <source src="밀양아리랑.mp3" type="audio/mpeg">
+          </audio>
+        </div>
+        <img src="밀양아리랑.png" alt="밀양아리랑 악보" class="score-img">
+        <div style="text-align:center;">
+          <div style="font-size:0.82rem;color:#ffd700;margin-bottom:4px;">세마치장단 정간보 (3소박×3박=9칸)</div>
+          <div class="jgb-wrap">
+            <div class="jgb-sub strong"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub beat-start"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub"></div>
+          </div>
+          <div style="font-size:0.78rem;color:#ffd700;margin-top:4px;">덩-- │ 덩-덕 │ 쿵덕-</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- slide-4 진도아리랑 -->
+  <div class="slide" id="slide-4">
+    <h2>🌊 진도아리랑</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;">
+      <div class="num-list">
+        <div class="num-item"><span class="num">①</span>장단: <span class="yellow">세마치장단</span> (3소박 3박)</div>
+        <div class="num-item"><span class="num">②</span><span class="red">구성지고 슬프면서도</span> 흥겨운 느낌</div>
+        <div class="num-item"><span class="num">③</span>음계: <span class="blue">육자배기토리</span> (전라도 특유)</div>
+        <div class="num-item"><span class="num">④</span>후렴: <span class="yellow">「아리아리랑 쓰리쓰리랑」</span></div>
+        <div class="num-item"><span class="num">⑤</span>발상지: <span class="pink">전라남도 진도</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;">
+        <div class="audio-box">
+          <span>🎵 진도아리랑</span>
+          <audio id="audio-jindo" controls style="width:190px;">
+            <source src="진도아리랑.mp3" type="audio/mpeg">
+          </audio>
+        </div>
+        <img src="진도 아리랑.png" alt="진도아리랑 악보" class="score-img">
+        <div style="text-align:center;">
+          <div style="font-size:0.82rem;color:#ffd700;margin-bottom:4px;">세마치장단 정간보 (3소박×3박=9칸)</div>
+          <div class="jgb-wrap">
+            <div class="jgb-sub strong"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub beat-start"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub"></div>
+          </div>
+          <div style="font-size:0.78rem;color:#ffd700;margin-top:4px;">덩-- │ 덩-덕 │ 쿵덕-</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- slide-5 강원도아리랑 -->
+  <div class="slide" id="slide-5">
+    <h2>🏔️ 강원도아리랑</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;">
+      <div class="num-list">
+        <div class="num-item"><span class="num">①</span>장단: <span class="yellow">엇모리장단</span> (혼합박자 10칸)</div>
+        <div class="num-item"><span class="num">②</span><span class="red">독특한 리듬감</span> — 3+2+3+2 혼합</div>
+        <div class="num-item"><span class="num">③</span>음계: <span class="blue">메나리토리</span> (강원·경상 특유)</div>
+        <div class="num-item"><span class="num">④</span>후렴: <span class="yellow">「아리랑 아리랑 아라리요」</span></div>
+        <div class="num-item"><span class="num">⑤</span>발상지: <span class="pink">강원도 전 지역</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;">
+        <div class="audio-box">
+          <span>🎵 강원도아리랑</span>
+          <audio id="audio-gangwon" controls style="width:190px;">
+            <source src="강원도아리랑.mp3" type="audio/mpeg">
+          </audio>
+        </div>
+        <img src="강원도 아리랑.png" alt="강원도아리랑 악보" class="score-img">
+        <div style="text-align:center;">
+          <div style="font-size:0.82rem;color:#ffd700;margin-bottom:4px;">엇모리장단 정간보 (3+2+3+2=10칸)</div>
+          <div class="jgb-wrap">
+            <div class="jgb-sub strong"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub beat-start"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"></div>
+          </div>
+          <div style="font-size:0.78rem;color:#ffd700;margin-top:4px;">덩-덕│쿵-│쿵-덕│쿵-</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- slide-6 세계 속의 아리랑 -->
+  <div class="slide" id="slide-6">
+    <h2>🌍 세계 속의 아리랑</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:960px;">
+      <div class="world-card">
+        <div class="world-flag">🇬🇧</div>
+        <div class="world-name">영국</div>
+        <div class="world-group">이지수 & 런던 심포니 오케스트라</div>
+        <div class="world-desc">앨범 「아리랑 콘체르탄테」수록</div>
+        <button class="yt-btn" onclick="openYT('https://www.youtube.com/watch?v=pt2LlXJeLOU')">▶ 아리랑 환상곡 감상</button>
+      </div>
+      <div class="world-card">
+        <div class="world-flag">🇩🇪</div>
+        <div class="world-name">독일 ①</div>
+        <div class="world-group">재즈 밴드 살타첼로</div>
+        <div class="world-desc">앨범 「42.195 Great Son」수록</div>
+        <button class="yt-btn" onclick="openYT('https://www.youtube.com/results?search_query=살타첼로+42.195+Great+Son+아리랑')">▶ YouTube 감상</button>
+      </div>
+      <div class="world-card">
+        <div class="world-flag">🇩🇪</div>
+        <div class="world-name">독일 ②</div>
+        <div class="world-group">도르트문트 청소년 합창단</div>
+        <div class="world-desc">「가장 아름다운 아리랑」정나래 지휘</div>
+        <button class="yt-btn" onclick="openYT('https://www.youtube.com/watch?v=nhfpUIuk80w')">▶ 아리랑 합창 감상</button>
+      </div>
+      <div class="world-card">
+        <div class="world-flag">🇸🇪</div>
+        <div class="world-name">스웨덴</div>
+        <div class="world-group">아 카펠라 · 리얼 그룹</div>
+        <div class="world-desc">2011년 내한 공연 아카펠라 아리랑</div>
+        <button class="yt-btn" onclick="openYT('https://www.youtube.com/watch?v=FatT6CcmdAo')">▶ 아카펠라 아리랑 감상</button>
+      </div>
+      <div class="world-card">
+        <div class="world-flag">🇰🇷</div>
+        <div class="world-name">대한민국</div>
+        <div class="world-group">2018 평창 패럴림픽 폐회식</div>
+        <div class="world-desc">세계인과 함께한 「아라리요」</div>
+        <button class="yt-btn" onclick="openYT('https://www.youtube.com/watch?v=xqjH9WZ7FYQ')">▶ 폐회식 아리랑 감상</button>
+      </div>
+      <div class="world-card">
+        <div class="world-flag">🇺🇸</div>
+        <div class="world-name">미국</div>
+        <div class="world-group">뉴욕 필하모닉 오케스트라</div>
+        <div class="world-desc">2008 평양 공연 앙코르 「아리랑」</div>
+        <button class="yt-btn" onclick="openYT('https://www.youtube.com/watch?v=ApPgwJdahDU')">▶ 평양 아리랑 감상</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== slide-7: 7대 전통 장단 ===== -->
+  <div class="slide" id="slide-7">
+    <h2>🥁 7대 전통 장단 정간보</h2>
+    <div style="display:flex;flex-direction:column;align-items:center;width:100%;gap:14px;">
+
+      <!-- 1행: ①자진모리 ②세마치 ③굿거리 -->
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+
+        <!-- ① 자진모리: 덩––│덩––│덩–덕│쿵–– -->
+        <div class="jd-card">
+          <div class="jd-name">① 자진모리</div>
+          <div class="jd-info">3소박 4박 (12칸) | ♩.=96~138</div>
+          <div class="jgb-wrap">
+            <!-- 1박 -->
+            <div class="jgb-sub strong"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"></div>
+            <!-- 2박 -->
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"></div>
+            <!-- 3박 -->
+            <div class="jgb-sub beat-start"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <!-- 4박 -->
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"></div>
+          </div>
+          <div style="font-size:10px;color:#ffd700;margin-top:4px;">덩–– │ 덩–– │ 덩–덕 │ 쿵––</div>
+        </div>
+
+        <!-- ② 세마치: 덩––│덩–덕│쿵덕– -->
+        <div class="jd-card">
+          <div class="jd-name">② 세마치</div>
+          <div class="jd-info">3소박 3박 (9칸) | ♩.=92~138</div>
+          <div class="jgb-wrap">
+            <!-- 1박 -->
+            <div class="jgb-sub strong"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"></div>
+            <!-- 2박 -->
+            <div class="jgb-sub beat-start"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <!-- 3박 -->
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub"></div>
+          </div>
+          <div style="font-size:10px;color:#ffd700;margin-top:4px;">덩–– │ 덩–덕 │ 쿵덕–</div>
+        </div>
+
+        <!-- ③ 굿거리 -->
+        <div class="jd-card">
+          <div class="jd-name">③ 굿거리</div>
+          <div class="jd-info">3소박 4박 (12칸) | ♩.=66~90</div>
+          <div class="jgb-wrap">
+            <div class="jgb-sub strong"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"><div class="jgb-sym">¡</div><div class="jgb-gm">기덕</div></div>
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"><div class="jgb-sym">⁞</div><div class="jgb-gm">더러러러</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub beat-start"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"><div class="jgb-sym">¡</div><div class="jgb-gm">기덕</div></div>
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"><div class="jgb-sym">⁞</div><div class="jgb-gm">더러러러</div></div>
+            <div class="jgb-sub"></div>
+          </div>
+          <div style="font-size:10px;color:#ffd700;margin-top:4px;">덩기덕 │ 쿵더러 │ 쿵기덕 │ 쿵더러</div>
+        </div>
+
+      </div><!-- /1행 -->
+
+      <!-- 2행: ④중모리 ⑤중중모리 ⑥엇모리 ⑦단모리 -->
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+
+        <!-- ④ 중모리: 덩–덕│쿵 덕더♩.♪ 덕덕│쿵│쿵덕│쿵 덕더♩.♪ 덕덕 -->
+        <div class="jd-card">
+          <div class="jd-name">④ 중모리</div>
+          <div class="jd-info">3소박 4박 (12칸) | 보통 빠르기</div>
+          <div class="jgb-wrap">
+            <!-- 칸1: 덩 -->
+            <div class="jgb-sub strong"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <!-- 칸2: – -->
+            <div class="jgb-sub"></div>
+            <!-- 칸3: 덕 -->
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <!-- 칸4: 쿵 -->
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <!-- 칸5: 덕더♩.♪ -->
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕더♩♪</div></div>
+            <!-- 칸6: 덕덕 -->
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕덕</div></div>
+            <!-- 칸7: 쿵 -->
+            <div class="jgb-sub beat-start"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <!-- 칸8: 쿵 -->
+            <div class="jgb-sub"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <!-- 칸9: 덕 -->
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <!-- 칸10: 쿵 -->
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <!-- 칸11: 덕더♩.♪ -->
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕더♩♪</div></div>
+            <!-- 칸12: 덕덕 -->
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕덕</div></div>
+          </div>
+          <div style="font-size:10px;color:#ffd700;margin-top:4px;">덩–덕 │ 쿵덕더♩♪덕덕 │ 쿵쿵덕 │ 쿵덕더♩♪덕덕</div>
+        </div>
+
+        <!-- ⑤ 중중모리 -->
+        <div class="jd-card">
+          <div class="jd-name">⑤ 중중모리</div>
+          <div class="jd-info">3소박 4박 (12칸) | ♩.=76~96</div>
+          <div class="jgb-wrap">
+            <div class="jgb-sub strong"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+          </div>
+          <div style="font-size:10px;color:#ffd700;margin-top:4px;">덩–덕 │ 쿵덕덕 │ 쿵쿵덕 │ 쿵–쿵</div>
+        </div>
+
+        <!-- ⑥ 엇모리 -->
+        <div class="jd-card">
+          <div class="jd-name">⑥ 엇모리</div>
+          <div class="jd-info">혼합박자 10칸 | 3+2+3+2</div>
+          <div class="jgb-wrap">
+            <div class="jgb-sub strong"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub beat-start"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"></div>
+          </div>
+          <div style="font-size:10px;color:#ffd700;margin-top:4px;">덩–덕 │ 쿵– │ 쿵–덕 │ 쿵–</div>
+        </div>
+
+        <!-- ⑦ 단모리 -->
+        <div class="jd-card">
+          <div class="jd-name">⑦ 단모리</div>
+          <div class="jd-info">2소박 4박 (8칸) | ♩=180 이상</div>
+          <div class="jgb-wrap">
+            <div class="jgb-sub strong"><div class="jgb-sym">⦶</div><div class="jgb-gm">덩</div></div>
+            <div class="jgb-sub"></div>
+            <div class="jgb-sub beat-start"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"><div class="jgb-sym">ㅣ</div><div class="jgb-gm">덕</div></div>
+            <div class="jgb-sub beat-start strong"><div class="jgb-sym">○</div><div class="jgb-gm">쿵</div></div>
+            <div class="jgb-sub"></div>
+          </div>
+          <div style="font-size:10px;color:#ffd700;margin-top:4px;">덩– │ 덕덕 │ 쿵덕 │ 쿵–</div>
+        </div>
+
+      </div><!-- /2행 -->
+    </div>
+  </div><!-- /slide-7 -->
+
+<!-- ===== slide-8: BTS 아리랑 연주순서 ===== -->
+<div class="slide" id="slide-8">
+  <h2 style="font-size:1.5rem;margin-bottom:8px;">🎤 BTS 아리랑 연주순서</h2>
+  <div class="audio-box" style="margin-bottom:10px;">
+    <span>🎵 BTS 아리랑</span>
+    <audio id="audio-bts" controls style="width:220px;">
+      <source src="BTS-아리랑.mp3" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <!-- 타임라인 -->
+  <div style="width:100%;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;margin-bottom:8px;">
+    <div style="display:flex;align-items:stretch;gap:0;min-width:1050px;flex-wrap:nowrap;justify-content:center;">
+
+      <!-- 전주 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="bts-step-box intro">
+          <div class="bts-num">전주</div>
+          <div class="bts-title" style="font-size:1.4rem;">•</div>
+          <div class="bts-jd" style="color:#aaa;">연주 없음</div>
+        </div>
+      </div>
+      <div class="bts-arrow">→</div>
+
+      <!-- ① 아리랑 → ①자진모리 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="bts-step-box arirang">
+          <div class="bts-num">①</div>
+          <div class="bts-title">아리랑</div>
+          <div class="bts-jd" style="color:#ff6b6b;font-weight:bold;">①자진모리</div>
+          <div class="bts-gm">덩–– │ 덩–– │ 덩–덕 │ 쿵––</div>
+        </div>
+      </div>
+      <div class="bts-arrow">→</div>
+
+      <!-- ② 진도아리랑 → ②세마치 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="bts-step-box jindo">
+          <div class="bts-num">②</div>
+          <div class="bts-title">진도아리랑</div>
+          <div class="bts-jd" style="color:#55efc4;font-weight:bold;">②세마치</div>
+          <div class="bts-gm">덩–– │ 덩–덕 │ 쿵덕–</div>
+        </div>
+      </div>
+      <div class="bts-arrow">→</div>
+
+      <!-- ③ 밀양아리랑 → ③굿거리 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="bts-step-box milyang">
+          <div class="bts-num">③</div>
+          <div class="bts-title">밀양아리랑</div>
+          <div class="bts-jd" style="color:#ffd700;font-weight:bold;">③굿거리</div>
+          <div class="bts-gm">덩기덕 │ 쿵더러 │ 쿵기덕 │ 쿵더러</div>
+        </div>
+      </div>
+      <div class="bts-arrow">→</div>
+
+      <!-- ④ 간주 → ④중모리 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="bts-step-box interlude">
+          <div class="bts-num">④</div>
+          <div class="bts-title">간주</div>
+          <div class="bts-jd" style="color:#74b9ff;font-weight:bold;">④중모리</div>
+          <div class="bts-gm">덩–덕│쿵덕더♩♪덕덕│쿵쿵덕│쿵덕더♩♪덕덕</div>
+        </div>
+      </div>
+      <div class="bts-arrow">→</div>
+
+      <!-- ①후렴 → ①자진모리 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="bts-step-box chorus">
+          <div class="bts-num">①후렴</div>
+          <div class="bts-title">아리랑 후렴</div>
+          <div class="bts-jd" style="color:#ff6b6b;font-weight:bold;">①자진모리</div>
+          <div class="bts-gm">덩–– │ 덩–– │ 덩–덕 │ 쿵––</div>
+        </div>
+      </div>
+      <div class="bts-arrow">→</div>
+
+      <!-- ⑤ 브리지 → ⑤중중모리 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="bts-step-box bridge">
+          <div class="bts-num">⑤</div>
+          <div class="bts-title">브리지</div>
+          <div class="bts-jd" style="color:#a0d0ff;font-weight:bold;">⑤중중모리</div>
+          <div class="bts-gm">덩–덕 │ 쿵덕덕 │ 쿵쿵덕 │ 쿵–쿵</div>
+        </div>
+      </div>
+      <div class="bts-arrow">→</div>
+
+      <!-- ⑥ 강원도아리랑 → ⑥엇모리 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="bts-step-box gangwon">
+          <div class="bts-num">⑥</div>
+          <div class="bts-title">강원도아리랑</div>
+          <div class="bts-jd" style="color:#fd79a8;font-weight:bold;">⑥엇모리</div>
+          <div class="bts-gm">덩–덕 │ 쿵– │ 쿵–덕 │ 쿵–</div>
+        </div>
+      </div>
+      <div class="bts-arrow">→</div>
+
+      <!-- ①후렴 → ①자진모리 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="bts-step-box chorus">
+          <div class="bts-num">①후렴</div>
+          <div class="bts-title">아리랑 후렴</div>
+          <div class="bts-jd" style="color:#ff6b6b;font-weight:bold;">①자진모리</div>
+          <div class="bts-gm">덩–– │ 덩–– │ 덩–덕 │ 쿵––</div>
+        </div>
+      </div>
+      <div class="bts-arrow">→</div>
+
+      <!-- ⑦ 후주 → ⑦단모리 -->
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div class="bts-step-box outro">
+          <div class="bts-num">⑦</div>
+          <div class="bts-title">후주</div>
+          <div class="bts-jd" style="color:#ddb0ff;font-weight:bold;">⑦단모리</div>
+          <div class="bts-gm">덩– │ 덕덕 │ 쿵덕 │ 쿵–</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div style="text-align:center;font-size:0.72rem;color:rgba(255,255,255,0.35);margin-bottom:8px;">← 좌우로 밀면 전체 순서를 볼 수 있어요 →</div>
+
+  <!-- 장단 구음 카드 7개 -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;max-width:920px;">
+
+    <div class="jd-gm-card">
+      <div class="jd-gm-name" style="color:#ff6b6b;">① 자진모리</div>
+      <div class="jd-gm-text">
+        1박: 덩 – –<br>
+        2박: 덩 – –<br>
+        3박: 덩 – 덕<br>
+        4박: 쿵 – –
+      </div>
+    </div>
+
+    <div class="jd-gm-card">
+      <div class="jd-gm-name" style="color:#55efc4;">② 세마치</div>
+      <div class="jd-gm-text">
+        1박: 덩 – –<br>
+        2박: 덩 – 덕<br>
+        3박: 쿵 덕 –
+      </div>
+    </div>
+
+    <div class="jd-gm-card">
+      <div class="jd-gm-name" style="color:#ffd700;">③ 굿거리</div>
+      <div class="jd-gm-text">
+        1박: 덩 기덕<br>
+        2박: 쿵 더러러러<br>
+        3박: 쿵 기덕<br>
+        4박: 쿵 더러러러
+      </div>
+    </div>
+
+    <div class="jd-gm-card">
+      <div class="jd-gm-name" style="color:#74b9ff;">④ 중모리</div>
+      <div class="jd-gm-text">
+        1박: 덩 – 덕<br>
+        2박: 쿵 덕더♩♪ 덕덕<br>
+        3박: 쿵 쿵 덕<br>
+        4박: 쿵 덕더♩♪ 덕덕
+      </div>
+    </div>
+
+    <div class="jd-gm-card">
+      <div class="jd-gm-name" style="color:#a0d0ff;">⑤ 중중모리</div>
+      <div class="jd-gm-text">
+        1박: 덩 – 덕<br>
+        2박: 쿵 덕 덕<br>
+        3박: 쿵 쿵 덕<br>
+        4박: 쿵 – 쿵
+      </div>
+    </div>
+
+    <div class="jd-gm-card">
+      <div class="jd-gm-name" style="color:#fd79a8;">⑥ 엇모리</div>
+      <div class="jd-gm-text">
+        3+2+3+2=10칸<br>
+        덩–덕 │ 쿵– │<br>
+        쿵–덕 │ 쿵–
+      </div>
+    </div>
+
+    <div class="jd-gm-card" style="grid-column:3/5;">
+      <div class="jd-gm-name" style="color:#ddb0ff;">⑦ 단모리</div>
+      <div class="jd-gm-text">
+        1박: 덩 – &nbsp; 2박: 덕 덕<br>
+        3박: 쿵 덕 &nbsp; 4박: 쿵 –
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 범례 -->
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;font-size:0.73rem;color:#ccc;margin-top:8px;">
+    <span style="color:#ff6b6b;">■ ①자진모리</span>
+    <span style="color:#55efc4;">■ ②세마치</span>
+    <span style="color:#ffd700;">■ ③굿거리</span>
+    <span style="color:#74b9ff;">■ ④중모리</span>
+    <span style="color:#a0d0ff;">■ ⑤중중모리</span>
+    <span style="color:#fd79a8;">■ ⑥엇모리</span>
+    <span style="color:#ddb0ff;">■ ⑦단모리</span>
+  </div>
+
+</div><!-- /slide-8 -->
+
+</div><!-- /slide-container -->
+
+<button class="nav-btn prev" onclick="changeSlide(-1)">&#8592;</button>
+<button class="nav-btn next" onclick="changeSlide(1)">&#8594;</button>
+<div class="dots" id="dots"></div>
+<div class="slide-counter" id="slideCounter"></div>
+
+<script>
+  let current = 0;
+  const slides = document.querySelectorAll('.slide');
+  const total  = slides.length;
+  const dotsEl = document.getElementById('dots');
+  const cntEl  = document.getElementById('slideCounter');
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('span');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(n) {
+    document.querySelectorAll('audio').forEach(a => { a.pause(); a.currentTime = 0; });
+    slides[current].classList.remove('active');
+    document.querySelectorAll('.dot')[current].classList.remove('active');
+    current = (n + total) % total;
+    slides[current].classList.add('active');
+    document.querySelectorAll('.dot')[current].classList.add('active');
+    cntEl.textContent = (current + 1) + ' / ' + total;
+  }
+
+  function changeSlide(dir) { goTo(current + dir); }
+  function openYT(url) { window.open(url, '_blank'); }
+
+  goTo(0);
+</script>
+</body>
+</html>

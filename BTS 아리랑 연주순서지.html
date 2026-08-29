@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BTS 아리랑 연주순서 활동지</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f0f0f0;
+    }
+
+    @page { size: A4 landscape; margin: 8mm; }
+    @media print {
+  body { background:#fff; }
+  .no-print { display:none !important; }   /* !important 추가 */
+  .a4 { box-shadow:none; margin:0; width:100%; }
+}
+
+    .print-btn {
+      display: block;
+      margin: 14px auto;
+      padding: 10px 32px;
+      background: #1a0a2e;
+      color: #ffd700;
+      border: 2px solid #ffd700;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .print-btn:hover { background:#2d1b4e; }
+
+    /* A4 가로 */
+.a4 {
+  width: 277mm;
+  min-height: 190mm;
+  margin: 0 auto 20px;
+  padding: 22mm 12mm 10mm 12mm;   /* 위 여백 10mm → 22mm 로 변경 */
+  background: #ffffff;
+  color: #111;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+}
+
+    /* 제목 */
+    .main-title {
+      font-size: 1.7rem;
+      font-weight: 900;
+      color: #1a0a2e;
+      text-align: center;
+      margin-bottom: 10px;
+      border-bottom: 3px solid #1a0a2e;
+      padding-bottom: 6px;
+      letter-spacing: 2px;
+    }
+    .main-title span { color: #c8a400; }
+
+    /* ===== 타임라인 ===== */
+    .timeline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      width: 100%;
+      margin-bottom: 10px;
+      flex-wrap: nowrap;
+    }
+
+    .step-box {
+      border: 2.5px solid #bbb;
+      border-radius: 10px;
+      padding: 6px 5px;
+      text-align: center;
+      min-width: 74px;
+      max-width: 84px;
+      background: #f9f9f9;
+    }
+    .step-box.intro     { border-color:#aaa;   background:#f4f4f4; }
+    .step-box.arirang   { border-color:#c8a400; background:#fffbe6; }
+    .step-box.jindo     { border-color:#2980b9; background:#eaf4fb; }
+    .step-box.milyang   { border-color:#e67e22; background:#fef5e7; }
+    .step-box.interlude { border-color:#888;    background:#f4f4f4; }
+    .step-box.chorus    { border-color:#c8a400; background:#fffde0; }
+    .step-box.bridge    { border-color:#27ae60; background:#eafaf1; }
+    .step-box.gangwon   { border-color:#c0392b; background:#fdf0ef; }
+    .step-box.outro     { border-color:#8e44ad; background:#f5eef8; }
+
+    .s-num   { font-size:0.65rem; color:#888; margin-bottom:2px; font-weight:600; }
+    .s-title { font-size:0.88rem; font-weight:900; color:#111; line-height:1.25; }
+    .s-jd    { font-size:0.68rem; font-weight:800; margin-top:3px; }
+    .s-gm    { font-size:0.58rem; color:#444; margin-top:3px; line-height:1.5; font-family:monospace; }
+    .arrow   { font-size:1.3rem; color:#c8a400; align-self:center; font-weight:900; flex-shrink:0; }
+
+    /* ===== 구음 카드 ===== */
+    .gm-section-title {
+      font-size:1rem;
+      font-weight:900;
+      color:#1a0a2e;
+      border-left:5px solid #c8a400;
+      padding-left:8px;
+      margin-bottom:8px;
+    }
+
+    .gm-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 7px;
+      width: 100%;
+    }
+    .gm-card {
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      padding: 8px 6px;
+      text-align: center;
+      background: #fafafa;
+    }
+    .gm-name {
+      font-size: 0.8rem;
+      font-weight: 900;
+      margin-bottom: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #eee;
+    }
+    .gm-text {
+      font-size: 0.68rem;
+      color: #222;
+      line-height: 2;
+      font-family: monospace;
+    }
+    .gm-beat {
+      font-size: 0.6rem;
+      color: #888;
+      font-weight: 700;
+      margin-right: 2px;
+    }
+
+    /* 범례 */
+    .legend {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      font-size: 0.68rem;
+      color: #333;
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px solid #ddd;
+    }
+    .legend span { font-weight:700; }
+  </style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ 인쇄하기 (가로)</button>
+
+<div class="a4">
+
+  <!-- 제목 -->
+  <div class="main-title">🎤 <span>BTS 아리랑</span> 연주순서 &amp; 장단 구음</div>
+
+  <!-- ① 타임라인 -->
+  <div class="timeline">
+
+    <!-- 전주 -->
+    <div class="step-box intro">
+      <div class="s-num">전주</div>
+      <div class="s-title" style="font-size:1.3rem;">•</div>
+      <div class="s-jd" style="color:#aaa;">연주 없음</div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- ① 아리랑 -->
+    <div class="step-box arirang">
+      <div class="s-num">①</div>
+      <div class="s-title">아리랑</div>
+      <div class="s-jd" style="color:#c0392b;">①자진모리</div>
+      <div class="s-gm">덩–– │ 덩–– │<br>덩–덕 │ 쿵––</div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- ② 진도아리랑 -->
+    <div class="step-box jindo">
+      <div class="s-num">②</div>
+      <div class="s-title">진도아리랑</div>
+      <div class="s-jd" style="color:#2980b9;">②세마치</div>
+      <div class="s-gm">덩–– │ 덩–덕 │<br>쿵덕–</div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- ③ 밀양아리랑 -->
+    <div class="step-box milyang">
+      <div class="s-num">③</div>
+      <div class="s-title">밀양아리랑</div>
+      <div class="s-jd" style="color:#e67e22;">③굿거리</div>
+      <div class="s-gm">덩기덕 │ 쿵더러 │<br>쿵기덕 │ 쿵더러</div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- ④ 간주 -->
+    <div class="step-box interlude">
+      <div class="s-num">④</div>
+      <div class="s-title">간주</div>
+      <div class="s-jd" style="color:#555;">④중모리</div>
+      <div class="s-gm">덩–덕│쿵덕더♩♪덕덕<br>쿵쿵덕│쿵덕더♩♪덕덕</div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- ①후렴 -->
+    <div class="step-box chorus">
+      <div class="s-num">①후렴</div>
+      <div class="s-title">아리랑 후렴</div>
+      <div class="s-jd" style="color:#c0392b;">①자진모리</div>
+      <div class="s-gm">덩–– │ 덩–– │<br>덩–덕 │ 쿵––</div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- ⑤ 브리지 -->
+    <div class="step-box bridge">
+      <div class="s-num">⑤</div>
+      <div class="s-title">브리지</div>
+      <div class="s-jd" style="color:#27ae60;">⑤중중모리</div>
+      <div class="s-gm">덩–덕 │ 쿵덕덕 │<br>쿵쿵덕 │ 쿵–쿵</div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- ⑥ 강원도아리랑 -->
+    <div class="step-box gangwon">
+      <div class="s-num">⑥</div>
+      <div class="s-title">강원도아리랑</div>
+      <div class="s-jd" style="color:#c0392b;">⑥엇모리</div>
+      <div class="s-gm">덩–덕 │ 쿵– │<br>쿵–덕 │ 쿵–</div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- ①후렴 -->
+    <div class="step-box chorus">
+      <div class="s-num">①후렴</div>
+      <div class="s-title">아리랑 후렴</div>
+      <div class="s-jd" style="color:#c0392b;">①자진모리</div>
+      <div class="s-gm">덩–– │ 덩–– │<br>덩–덕 │ 쿵––</div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- ⑦ 후주 -->
+    <div class="step-box outro">
+      <div class="s-num">⑦</div>
+      <div class="s-title">후주</div>
+      <div class="s-jd" style="color:#8e44ad;">⑦단모리</div>
+      <div class="s-gm">덩– │ 덕덕 │<br>쿵덕 │ 쿵–</div>
+    </div>
+
+  </div><!-- /timeline -->
+
+  <!-- ② 구음 카드 7개 가로 -->
+  <div class="gm-section-title">🥁 장단별 구음</div>
+  <div class="gm-grid">
+
+    <!-- ① 자진모리 -->
+    <div class="gm-card" style="border-color:#c0392b;">
+      <div class="gm-name" style="color:#c0392b;">① 자진모리</div>
+      <div class="gm-text">
+        <span class="gm-beat">1박</span>덩 – –<br>
+        <span class="gm-beat">2박</span>덩 – –<br>
+        <span class="gm-beat">3박</span>덩 – 덕<br>
+        <span class="gm-beat">4박</span>쿵 – –
+      </div>
+    </div>
+
+    <!-- ② 세마치 -->
+    <div class="gm-card" style="border-color:#2980b9;">
+      <div class="gm-name" style="color:#2980b9;">② 세마치</div>
+      <div class="gm-text">
+        <span class="gm-beat">1박</span>덩 – –<br>
+        <span class="gm-beat">2박</span>덩 – 덕<br>
+        <span class="gm-beat">3박</span>쿵 덕 –
+      </div>
+    </div>
+
+    <!-- ③ 굿거리 -->
+    <div class="gm-card" style="border-color:#e67e22;">
+      <div class="gm-name" style="color:#e67e22;">③ 굿거리</div>
+      <div class="gm-text">
+        <span class="gm-beat">1박</span>덩 기덕<br>
+        <span class="gm-beat">2박</span>쿵 더러러러<br>
+        <span class="gm-beat">3박</span>쿵 기덕<br>
+        <span class="gm-beat">4박</span>쿵 더러러러
+      </div>
+    </div>
+
+    <!-- ④ 중모리 -->
+    <div class="gm-card" style="border-color:#555;">
+      <div class="gm-name" style="color:#333;">④ 중모리</div>
+      <div class="gm-text">
+        <span class="gm-beat">1박</span>덩 – 덕<br>
+        <span class="gm-beat">2박</span>쿵 덕더♩♪덕덕<br>
+        <span class="gm-beat">3박</span>쿵 쿵 덕<br>
+        <span class="gm-beat">4박</span>쿵 덕더♩♪덕덕
+      </div>
+    </div>
+
+    <!-- ⑤ 중중모리 -->
+    <div class="gm-card" style="border-color:#27ae60;">
+      <div class="gm-name" style="color:#27ae60;">⑤ 중중모리</div>
+      <div class="gm-text">
+        <span class="gm-beat">1박</span>덩 – 덕<br>
+        <span class="gm-beat">2박</span>쿵 덕 덕<br>
+        <span class="gm-beat">3박</span>쿵 쿵 덕<br>
+        <span class="gm-beat">4박</span>쿵 – 쿵
+      </div>
+    </div>
+
+    <!-- ⑥ 엇모리 -->
+    <div class="gm-card" style="border-color:#c0392b;">
+      <div class="gm-name" style="color:#c0392b;">⑥ 엇모리</div>
+      <div class="gm-text">
+        3+2+3+2=10칸<br>
+        덩–덕 │ 쿵– │<br>
+        쿵–덕 │ 쿵–
+      </div>
+    </div>
+
+    <!-- ⑦ 단모리 -->
+    <div class="gm-card" style="border-color:#8e44ad;">
+      <div class="gm-name" style="color:#8e44ad;">⑦ 단모리</div>
+      <div class="gm-text">
+        <span class="gm-beat">1박</span>덩 –<br>
+        <span class="gm-beat">2박</span>덕 덕<br>
+        <span class="gm-beat">3박</span>쿵 덕<br>
+        <span class="gm-beat">4박</span>쿵 –
+      </div>
+    </div>
+
+  </div><!-- /gm-grid -->
+
+  <!-- 범례 -->
+  <div class="legend">
+    <span style="color:#c0392b;">■ ①자진모리</span>
+    <span style="color:#2980b9;">■ ②세마치</span>
+    <span style="color:#e67e22;">■ ③굿거리</span>
+    <span style="color:#333;">■ ④중모리</span>
+    <span style="color:#27ae60;">■ ⑤중중모리</span>
+    <span style="color:#c0392b;">■ ⑥엇모리</span>
+    <span style="color:#8e44ad;">■ ⑦단모리</span>
+  </div>
+
+</div><!-- /a4 -->
+
+</body>
+</html>
